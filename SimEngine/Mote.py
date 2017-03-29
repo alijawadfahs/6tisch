@@ -1254,7 +1254,7 @@ class Mote(object):
 
             # increment mote state
             self._incrementMoteStats('droppedNoRoute')
-            print "noroute"
+            #print "noroute"
             return False
 
         elif not self.getTxCells():
@@ -1263,7 +1263,7 @@ class Mote(object):
             # increment mote state
             self._incrementMoteStats('droppedNoTxCells')
             #print self
-            print "notxcell"
+            #print "notxcell"
             return False
 
         elif packet['type'] == self.APP_TYPE_DATA and len(self.txQueue)==self.TSCH_QUEUE_SIZE:
@@ -1271,12 +1271,12 @@ class Mote(object):
 
             # update mote stats
             self._incrementMoteStats('droppedQueueFull')
-            print "data queue full"
+            #print "data queue full"
             return False
 
         elif packet['type'] == self.APP_TYPE_CONTROL and (self.settings.queuing == 1 and len(self.controlQueue)==self.TOP_CQUEUE_SIZE):
                 self._incrementMoteStats('droppedQueueFull')
-                print "control queue full"
+                #print "control queue full"
                 return False
         else:
             # all is good
