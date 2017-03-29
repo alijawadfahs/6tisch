@@ -531,7 +531,8 @@ class Mote(object):
 
                     tsList=[ts for ts, cell in self.schedule.iteritems() if cell['neighbor']==neighbor and cell['dir']==self.DIR_TX]
                     #print "remove from rpl " +str(self)
-                    self.top_cell_deletion_sender(neighbor,tsList)
+                    if tsList: 
+                        self.top_cell_deletion_sender(neighbor,tsList)
 
     def _rpl_calcRankIncrease(self, neighbor):
 
