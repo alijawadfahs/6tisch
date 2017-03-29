@@ -40,7 +40,7 @@ class SimStats(object):
         return cls._instance
     #===== end singleton
 
-    def __init__(self,runNum):
+    def __init__(self,runNum,numRuns):
 
         #===== start singleton
         if self._init:

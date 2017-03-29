@@ -324,7 +324,7 @@ def runSims(options):
             settings.setStartTime(runStartTime)
             settings.setCombinationKeys(combinationKeys)
             simengine        = SimEngine.SimEngine(runNum)
-            simstats         = SimStats.SimStats(runNum)
+            simstats         = SimStats.SimStats(runNum,simParam['numRuns'])
 
             # start simulation run
             simengine.start()
