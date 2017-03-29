@@ -50,7 +50,8 @@ class SimStats(object):
 
         # store params
         self.runNum                         = runNum
-
+        self.numRuns                        = numRuns
+        #recieving the number of runs 
         # local variables
         self.engine                         = SimEngine.SimEngine()
         self.settings                       = SimSettings.SimSettings()
