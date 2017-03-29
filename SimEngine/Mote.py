@@ -1028,7 +1028,7 @@ class Mote(object):
             #        print "ABORT"
                 else :
                     return
-            if neighbor in self.requestTriggered and self.requestTriggered[neighbor] == True or self.pendingTransaction != None :
+            if neighbor in self.requestTriggered and self.requestTriggered[neighbor] == True or neighbor not in self.sequenceNumberWithNeighbor.keys():
                 return
             self.requestTriggered[neighbor] = True
             self.pendingTransaction = pendingTransaction("moteRequest", neighbor, None,self.sequenceNumberWithNeighbor[neighbor])
