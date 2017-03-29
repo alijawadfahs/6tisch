@@ -98,7 +98,8 @@ class SimStats(object):
         cycle = int(self.engine.getAsn()/self.settings.slotframeLength)
 
         if self.settings.processID==None:
-            print('      cycle: {0}/{1}'.format(cycle,self.settings.numCyclesPerRun-1))
+            print('      cycle: {0}/{1}    Run:  {2}/{3}'.format(cycle,self.settings.numCyclesPerRun-1,self.runNum +1 ,self.numRuns))
+
 
         # write statistics to output file
         self._collectLatencyStats().items()
