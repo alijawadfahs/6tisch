@@ -2300,3 +2300,8 @@ class Mote(object):
         #reserve cells assigned by a neighbor to avoid collision at dedicated cells (LLME) 
         for cell in cells:
             neighbor.reserve[cell[0]][cell[1]]=True
+            
+    def _delete_cell_neighbor(self,cells,neighbor):
+        #delete cells deleted  by a neighbor 
+        for cell in cells:
+            neighbor.reserve[cell[0]][cell[1]]=False
