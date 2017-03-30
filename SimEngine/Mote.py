@@ -160,6 +160,7 @@ class Mote(object):
         self.pktToSend                 = None
         self.pktToSendAlloc        = None
         self.schedule                  = {}                    # indexed by ts, contains cell
+        self.reserve                   = [[False]*self.settings.numChans for _ in range(self.settings.slotframeLength)]
         if self.settings.queuing != 0 :
             self.waitingFor                = self.DIR_SHARED
         else :
