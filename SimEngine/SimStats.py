@@ -227,7 +227,7 @@ class SimStats(object):
                 if tx1!=tx2 and rx1!=rx2:
                     # check whether interference from tx1 to rx2 is effective
                     if tx1.getRSSI(rx2) > rx2.minRssi:
-                        effectiveCollidedControls += 0
+                        effectiveCollidedControls += 1
 
         return {'scheduleCollisions':scheduleCollisions, 'collidedTxs': collidedTxs, 'effectiveCollidedTxs': effectiveCollidedTxs, 'collidedControls' : collidedControls, 'effectiveCollidedControls' : effectiveCollidedControls, 'collidedAnswers' : collidedAnswers, 'collidedRequests' : collidedRequests}
 
