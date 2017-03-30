@@ -2295,3 +2295,8 @@ class Mote(object):
         output += [template.format(*params)]
         output  = ''.join(output)
         logfunc(output)
+    ###########################################Ali jawad FAHS###############################
+    def _reserve_cell_neighbor(self,cells,neighbor):
+        #reserve cells assigned by a neighbor to avoid collision at dedicated cells (LLME) 
+        for cell in cells:
+            neighbor.reserve[cell[0]][cell[1]]=True
