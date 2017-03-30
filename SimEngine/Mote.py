@@ -2300,8 +2300,18 @@ class Mote(object):
         #reserve cells assigned by a neighbor to avoid collision at dedicated cells (LLME) 
         for cell in cells:
             neighbor.reserve[cell[0]][cell[1]]=True
-            
+
     def _delete_cell_neighbor(self,cells,neighbor):
         #delete cells deleted  by a neighbor 
         for cell in cells:
             neighbor.reserve[cell[0]][cell[1]]=False
+
+    def _choose_channel(self,neighbor,ts):
+     #choose a channel according to the reserve table
+        k=[]
+        for j in range(self.settings.numChans):
+             if self.reserve[ts][j]==False:
+                if neighbor.reserve[ts][j]==False:
+                    k+= [(j)]
+        random.shuffle(k)           
+        return k[0]         
