@@ -1117,10 +1117,16 @@ class Mote(object):
                 if neighbor not in self.numCellsToNeighbors:
                     self.numCellsToNeighbors[neighbor]    = 0
                 self.numCellsToNeighbors[neighbor]  += len(cellList)
+                for neighb in neighbor._myNeigbors():
+                    if self!=neighb:
+                        self._reserve_cell_neighbor(cellList,neighb)
             else:
                 if neighbor not in self.numCellsFromNeighbors:
                     self.numCellsFromNeighbors[neighbor]    = 0
                 self.numCellsFromNeighbors[neighbor]  += len(cellList)
+                for neighb in self._myNeigbors():
+                    if neighbor!=neighb:
+                        self._reserve_cell_neighbor(cellList,neighb)
             
             if self.settings.queuing != 0  :
                 self.cellsAllocToNeighbor[neighbor] = []
