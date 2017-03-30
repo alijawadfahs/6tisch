@@ -160,6 +160,7 @@ class Mote(object):
         self.pktToSend                 = None
         self.pktToSendAlloc        = None
         self.schedule                  = {}                    # indexed by ts, contains cell
+        self.reserve                   = [[False]*self.settings.numChans for _ in range(self.settings.slotframeLength)]
         if self.settings.queuing != 0 :
             self.waitingFor                = self.DIR_SHARED
         else :
@@ -1088,7 +1089,7 @@ class Mote(object):
             else :
                 availableTimeslots=list(set(range(self.settings.slotframeLength))-set(neighbor.schedule.keys())-set(self.schedule.keys()))
             random.shuffle(availableTimeslots)
-            cells=dict([(ts,random.randint(0,self.settings.numChans-1)) for ts in availableTimeslots[:numCells]])
+            cells=dict([(ts,self._choose_channel(neighbor,ts)) for ts in availableTimeslots[:numCells]])
             cellList=[]
             for ts, ch in cells.iteritems():
                 # log
@@ -1116,10 +1117,16 @@ class Mote(object):
                 if neighbor not in self.numCellsToNeighbors:
                     self.numCellsToNeighbors[neighbor]    = 0
                 self.numCellsToNeighbors[neighbor]  += len(cellList)
+                for neighb in neighbor._myNeigbors():
+                    if self!=neighb:
+                        self._reserve_cell_neighbor(cellList,neighb)
             else:
                 if neighbor not in self.numCellsFromNeighbors:
                     self.numCellsFromNeighbors[neighbor]    = 0
                 self.numCellsFromNeighbors[neighbor]  += len(cellList)
+                for neighb in self._myNeigbors():
+                    if neighbor!=neighb:
+                        self._reserve_cell_neighbor(cellList,neighb)
             
             if self.settings.queuing != 0  :
                 self.cellsAllocToNeighbor[neighbor] = []
@@ -1168,11 +1175,18 @@ class Mote(object):
 
     def top_cell_deletion_receiver(self,neighbor,tsList):
         with self.dataLock:
+            cellList=[]
+            for ts in tsList :
+                cellList +=[(ts,self.schedule.get(ts)['ch'])]
             self._tsch_removeCells(
                 neighbor     = neighbor,
                 tsList       = tsList,
                 dir          = self.DIR_RX
             )
+            for neighb in self._myNeigbors():
+                if neighbor!=neighb:
+                    self._delete_cell_neighbor(cellList,neighb)
+                    
             #if neighbor in self.numCellsFromNeighbors :
             #    if self.numCellsFromNeighbors[neighbor] <=0 :
             #        self.numCellsFromNeighbors[neighbor] = 0
@@ -2294,3 +2308,23 @@ class Mote(object):
         output += [template.format(*params)]
         output  = ''.join(output)
         logfunc(output)
+    ###########################################Ali jawad FAHS###############################
+    def _reserve_cell_neighbor(self,cells,neighbor):
+        #reserve cells assigned by a neighbor to avoid collision at dedicated cells (LLME) 
+        for cell in cells:
+            neighbor.reserve[cell[0]][cell[1]]=True
+
+    def _delete_cell_neighbor(self,cells,neighbor):
+        #delete cells deleted  by a neighbor 
+        for cell in cells:
+            neighbor.reserve[cell[0]][cell[1]]=False
+
+    def _choose_channel(self,neighbor,ts):
+     #choose a channel according to the reserve table
+        k=[]
+        for j in range(self.settings.numChans):
+             if self.reserve[ts][j]==False:
+                if neighbor.reserve[ts][j]==False:
+                    k+= [(j)]
+        random.shuffle(k)           
+        return k[0]         
