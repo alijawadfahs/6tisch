@@ -1175,11 +1175,18 @@ class Mote(object):
 
     def top_cell_deletion_receiver(self,neighbor,tsList):
         with self.dataLock:
+            cellList=[]
+            for ts in tsList :
+                cellList +=[(ts,self.schedule.get(ts)['ch'])]
             self._tsch_removeCells(
                 neighbor     = neighbor,
                 tsList       = tsList,
                 dir          = self.DIR_RX
             )
+            for neighb in self._myNeigbors():
+                if neighbor!=neighb:
+                    self._delete_cell_neighbor(cellList,neighb)
+                    
             #if neighbor in self.numCellsFromNeighbors :
             #    if self.numCellsFromNeighbors[neighbor] <=0 :
             #        self.numCellsFromNeighbors[neighbor] = 0
