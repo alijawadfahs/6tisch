@@ -1089,7 +1089,7 @@ class Mote(object):
             else :
                 availableTimeslots=list(set(range(self.settings.slotframeLength))-set(neighbor.schedule.keys())-set(self.schedule.keys()))
             random.shuffle(availableTimeslots)
-            cells=dict([(ts,random.randint(0,self.settings.numChans-1)) for ts in availableTimeslots[:numCells]])
+            cells=dict([(ts,self._choose_channel(neighbor,ts)) for ts in availableTimeslots[:numCells]])
             cellList=[]
             for ts, ch in cells.iteritems():
                 # log
