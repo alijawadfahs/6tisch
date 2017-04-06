@@ -1122,15 +1122,32 @@ class Mote(object):
 					for neighb in neighbor._myNeigbors():
 						if self!=neighb:
 							self._reserve_cell_neighbor(cellList,neighb)
+				else:
+					if self.settings.lmeWithPdr: # same as the one below  line 1141
+						for neighb in neighbor._myNeigbors():
+							fail = random.random()
+							if neighbor.PDR[neighb]>fail:
+								self._reserve_cell_neighbor(cellList,neighb)
 			else:
 				if neighbor not in self.numCellsFromNeighbors:
 					self.numCellsFromNeighbors[neighbor]    = 0
 				self.numCellsFromNeighbors[neighbor]  += len(cellList)
-				#if lme is enabled in the ideal case update the reserve for all the neighbors except theour neighbor (case of child)
+				#if lme is enabled in the ideal case update the reserve for all the neighbors except theour neighbor (case of parent)
 				if self.settings.lme :
 					for neighb in self._myNeigbors():
 						if neighbor!=neighb:
 							self._reserve_cell_neighbor(cellList,neighb)
+				else:
+					if self.settings.lmeWithPdr:
+						#else if we are using lme while broadcasting usin the value of PDR 
+						for neighb in self._myNeigbors():
+							fail = random.random() #we pick a random value fail which is uniform and between 0 and 1
+							if self.PDR[neighb]>fail: # if fail is greater than the PDR value with the neighbor then the transmission is unsuccessful  
+								self._reserve_cell_neighbor(cellList,neighb) #else the transmission is sucessful and the reserve is updated
+
+
+
+
 			
 			if self.settings.queuing != 0  :
 				self.cellsAllocToNeighbor[neighbor] = []
