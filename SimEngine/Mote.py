@@ -1107,6 +1107,7 @@ class Mote(object):
 					cellList += [(self.engine.getNextTS(self.sharedSlots,dir))]
 					cells[cellList[a][0]] = cellList[a][1]
 			self._tsch_addCells(neighbor,cellList)
+			self.cellsBuffer.extend(cellList) #add this list to the buffer
 			
 			if self.settings.queuing != 0 :
 				if neighbor not in self.sequenceNumberWithNeighbor :
@@ -1122,13 +1123,26 @@ class Mote(object):
 				if self.setting.lme :
 					for neighb in neighbor._myNeigbors():
 						if self!=neighb:
-							self._reserve_cell_neighbor(cellList,neighb)
+
+							if not self.settings.lmeWithBuffer:
+								self._reserve_cell_neighbor(cellList,neighb)
+							
+							else:
+								self._reserve_cell_neighbor(self.cellsBuffer,neighb)
+
 				else:
 					if self.settings.lmeWithPdr: # same as the one below  line 1141
 						for neighb in neighbor._myNeigbors():
 							fail = random.random()
 							if neighbor.PDR[neighb]>fail:
-								self._reserve_cell_neighbor(cellList,neighb)
+
+								if not self.settings.lmeWithBuffer:
+									self._reserve_cell_neighbor(cellList,neighb)
+							
+								else:
+									self._reserve_cell_neighbor(self.cellsBuffer,neighb)
+
+
 			else:
 				if neighbor not in self.numCellsFromNeighbors:
 					self.numCellsFromNeighbors[neighbor]    = 0
@@ -1137,19 +1151,22 @@ class Mote(object):
 				if self.settings.lme :
 					for neighb in self._myNeigbors():
 						if neighbor!=neighb:
-							self._reserve_cell_neighbor(cellList,neighb)
+							if not self.settings.lmeWithBuffer:
+								self._reserve_cell_neighbor(cellList,neighb)
+							else:
+								self._reserve_cell_neighbor(self.cellsBuffer,neighb)
+								
 				else:
 					if self.settings.lmeWithPdr:
 						#else if we are using lme while broadcasting usin the value of PDR 
 						for neighb in self._myNeigbors():
 							fail = random.random() #we pick a random value fail which is uniform and between 0 and 1
 							if self.PDR[neighb]>fail: # if fail is greater than the PDR value with the neighbor then the transmission is unsuccessful  
-								self._reserve_cell_neighbor(cellList,neighb) #else the transmission is sucessful and the reserve is updated
-
-
-
-
-			
+								if not self.settings.lmeWithBuffer:
+									self._reserve_cell_neighbor(cellList,neighb)#else the transmission is sucessful and the reserve is updated
+								else:
+									self._reserve_cell_neighbor(self.cellsBuffer,neighb) #else the transmission is sucessful and the reserve is updated
+												
 			if self.settings.queuing != 0  :
 				self.cellsAllocToNeighbor[neighbor] = []
 				for (ts,ch,dir) in cellList :
@@ -2339,12 +2356,12 @@ class Mote(object):
 		#reserve cells assigned by a neighbor to avoid collision at dedicated cells (LLME) 
 		for cell in cells:
 			neighbor.reserve[cell[0]][cell[1]]=True
-
+			
 	def _delete_cell_neighbor(self,cells,neighbor):
 		#delete cells deleted  by a neighbor 
 		for cell in cells:
 			neighbor.reserve[cell[0]][cell[1]]=False
-
+			
 	def _choose_channel(self,neighbor,ts):
 	 #choose a channel according to the reserve table
 		k=[]
