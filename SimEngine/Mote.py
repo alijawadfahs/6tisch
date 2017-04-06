@@ -1122,7 +1122,7 @@ class Mote(object):
 					self.numCellsToNeighbors[neighbor]    = 0
 				self.numCellsToNeighbors[neighbor]  += len(cellList)
 				#if lme is enabled in the ideal case update the reserve for all the neighbors except theour neighbor (case of child)
-				if self.setting.lme :
+				if self.settings.lme :
 					for neighb in neighbor._myNeigbors():
 						if self!=neighb:
 
@@ -1132,7 +1132,7 @@ class Mote(object):
 							else: # self.settings.lmeWithBuffer == True
 								self._reserve_cell_neighbor(self.cellsBuffer,neighb)
 
-				else: # self.setting.lme == False
+				else: # self.settings.lme == False
 					if self.settings.lmeWithPdr: # same as the one below  line 1141
 						for neighb in neighbor._myNeigbors():
 							fail = random.random()
@@ -1143,17 +1143,15 @@ class Mote(object):
 							
 								else: # self.settings.lmeWithBuffer == True
 									self._reserve_cell_neighbor(self.cellsBuffer,neighb) #transmission is sucessful and we send also the old cells so all the cells in the buffer won't be lost
-									if self.settings.claclost:
-										for cell in cellsBuffer:
-                               				neighb.lost[cell[0]][cell[1]]=False
-                               			print 'false:',cell[0],cell[1],cell
-
+									if self.settings.calclost:
+										for cell in self.cellsBuffer:
+											neighb.lost[cell[0]][cell[1]]=False
+											
 							else: # neighbor.PDR[neighb] <= fail
 							#case of the packet is lost due two the network
-								if self.settings.claclost:
+								if self.settings.calclost:
 									for cell in cellList:
-										neighb.lost[cell[0]][cell[1]]=True
-										print 'true:',cell[0],cell[1],cell
+										neighb.lost[cell[0]][cell[1]]=True										
 			else: # dir!=self.DIR_TX
 				if neighbor not in self.numCellsFromNeighbors:
 					self.numCellsFromNeighbors[neighbor]    = 0
@@ -1168,7 +1166,7 @@ class Mote(object):
 								self._reserve_cell_neighbor(self.cellsBuffer,neighb)
 
 								
-				else:  # self.setting.lme == False
+				else:  # self.settings.lme == False
 					if self.settings.lmeWithPdr:
 						#else if we are using lme while broadcasting usin the value of PDR 
 						for neighb in self._myNeigbors():
@@ -1178,16 +1176,15 @@ class Mote(object):
 									self._reserve_cell_neighbor(cellList,neighb)#else the transmission is sucessful and the reserve is updated
 								else: # self.settings.lmeWithBuffer == True
 									self._reserve_cell_neighbor(self.cellsBuffer,neighb) #else the transmission is sucessful and the reserve is updated
-									if self.settings.claclost:
-										for cell in cellsBuffer:
-											neighb.lost[cell[0]][cell[1]]=False
-										print 'false:',cell[0],cell[1],cell
+									if self.settings.calclost:
+										for cell in self.cellsBuffer:
+											neighb.lost[cell[0]][cell[1]]=False										
 							else: # self.PDR[neighb] <= fail
-								if self.settings.claclost:
+								if self.settings.calclost:
 									for cell in cellList:
 										neighb.lost[cell[0]][cell[1]]=True
-										print 'true:',cell[0],cell[1],cell
 										
+
 			#############################################################################################################################################################
 			
 			if self.settings.queuing != 0  :

@@ -228,7 +228,18 @@ class SimStats(object):
                     # check whether interference from tx1 to rx2 is effective
                     if tx1.getRSSI(rx2) > rx2.minRssi:
                         effectiveCollidedControls += 1
-
+        if self.settings.calclost:
+            lostreserve=0
+            efflostreserve=0
+            for mote in self.engine.motes:
+                for i in range(self.settings.slotframeLength):
+                    for j in range(self.settings.numChans):
+                        if mote.lost[i][j] == True :
+                            lostreserve += 1 
+                            if i in mote.schedule.keys() and mote.schedule.get(i)['ch'] == j and mote.schedule.get(i)['dir']==mote.DIR_TX:
+                                efflostreserve += 1
+            return {'scheduleCollisions':scheduleCollisions, 'collidedTxs': collidedTxs, 'effectiveCollidedTxs': effectiveCollidedTxs, 'collidedControls' : collidedControls, 'effectiveCollidedControls' : effectiveCollidedControls, 'collidedAnswers' : collidedAnswers, 'collidedRequests' : collidedRequests, 'lostreserve' : collidedRequests, 'efflostreserve' : efflostreserve}
+       
         return {'scheduleCollisions':scheduleCollisions, 'collidedTxs': collidedTxs, 'effectiveCollidedTxs': effectiveCollidedTxs, 'collidedControls' : collidedControls, 'effectiveCollidedControls' : effectiveCollidedControls, 'collidedAnswers' : collidedAnswers, 'collidedRequests' : collidedRequests}
 
     #=== writing to file
