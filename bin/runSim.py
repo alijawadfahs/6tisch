@@ -281,7 +281,7 @@ def parseCliOptions():
         help = 'god mode',
     )
 
-    ################################ Ali Jawad FAHS ###############################
+    ################################ Ali Jawad FAHS ##############################################################################################
 
     parser.add_argument('--lme',
         dest       = 'lme',
@@ -301,6 +301,12 @@ def parseCliOptions():
         default    = False,
         help       = 'use the lme cells buffer to send the old cells as well ',
     )
+    parser.add_argument('--calcLost',
+        dest       = 'calclost',
+        action     = 'store_true',
+        default    = False,
+        help       = 'claculate the number of the lost broadcasts of lme',
+    )
     parser.add_argument( '--bufferLength',
         dest       = 'bufferLength',
         nargs      = '+',
@@ -308,7 +314,7 @@ def parseCliOptions():
         default    = 10,
         help       = 'Number of cells a node buffer can contain.',
     )
-    
+    #######################################################################################################################################################
     options        = parser.parse_args()
 
     return options.__dict__

@@ -161,6 +161,7 @@ class Mote(object):
 		self.pktToSendAlloc        = None
 		self.schedule                  = {}                    # indexed by ts, contains cell
 		self.reserve                   = [[False]*self.settings.numChans for _ in range(self.settings.slotframeLength)]
+		self.lost                      = [[False]*self.settings.numChans for _ in range(self.settings.slotframeLength)]
 		self.cellsBuffer               = collections.deque([], self.settings.bufferLength)
 		if self.settings.queuing != 0 :
 			self.waitingFor                = self.DIR_SHARED
@@ -1113,7 +1114,8 @@ class Mote(object):
 				if neighbor not in self.sequenceNumberWithNeighbor :
 					self.sequenceNumberWithNeighbor[neighbor] = 0
 				self.pendingTransaction = pendingTransaction("parentAdds", neighbor, cellList, self.sequenceNumberWithNeighbor[neighbor])
-				
+			##########################################################################Ali Jawad Fahs#########################################################################	
+			
 			# update counters
 			if dir==self.DIR_TX:
 				if neighbor not in self.numCellsToNeighbors:
@@ -1127,10 +1129,10 @@ class Mote(object):
 							if not self.settings.lmeWithBuffer:
 								self._reserve_cell_neighbor(cellList,neighb)
 							
-							else:
+							else: # self.settings.lmeWithBuffer == True
 								self._reserve_cell_neighbor(self.cellsBuffer,neighb)
 
-				else:
+				else: # self.setting.lme == False
 					if self.settings.lmeWithPdr: # same as the one below  line 1141
 						for neighb in neighbor._myNeigbors():
 							fail = random.random()
@@ -1139,11 +1141,20 @@ class Mote(object):
 								if not self.settings.lmeWithBuffer:
 									self._reserve_cell_neighbor(cellList,neighb)
 							
-								else:
-									self._reserve_cell_neighbor(self.cellsBuffer,neighb)
+								else: # self.settings.lmeWithBuffer == True
+									self._reserve_cell_neighbor(self.cellsBuffer,neighb) #transmission is sucessful and we send also the old cells so all the cells in the buffer won't be lost
+									if self.settings.claclost:
+										for cell in cellsBuffer:
+                               				neighb.lost[cell[0]][cell[1]]=False
+                               			print 'false:',cell[0],cell[1],cell
 
-
-			else:
+							else: # neighbor.PDR[neighb] <= fail
+							#case of the packet is lost due two the network
+								if self.settings.claclost:
+									for cell in cellList:
+										neighb.lost[cell[0]][cell[1]]=True
+										print 'true:',cell[0],cell[1],cell
+			else: # dir!=self.DIR_TX
 				if neighbor not in self.numCellsFromNeighbors:
 					self.numCellsFromNeighbors[neighbor]    = 0
 				self.numCellsFromNeighbors[neighbor]  += len(cellList)
@@ -1153,10 +1164,11 @@ class Mote(object):
 						if neighbor!=neighb:
 							if not self.settings.lmeWithBuffer:
 								self._reserve_cell_neighbor(cellList,neighb)
-							else:
+							else: # self.settings.lmeWithBuffer == True
 								self._reserve_cell_neighbor(self.cellsBuffer,neighb)
+
 								
-				else:
+				else:  # self.setting.lme == False
 					if self.settings.lmeWithPdr:
 						#else if we are using lme while broadcasting usin the value of PDR 
 						for neighb in self._myNeigbors():
@@ -1164,9 +1176,20 @@ class Mote(object):
 							if self.PDR[neighb]>fail: # if fail is greater than the PDR value with the neighbor then the transmission is unsuccessful  
 								if not self.settings.lmeWithBuffer:
 									self._reserve_cell_neighbor(cellList,neighb)#else the transmission is sucessful and the reserve is updated
-								else:
+								else: # self.settings.lmeWithBuffer == True
 									self._reserve_cell_neighbor(self.cellsBuffer,neighb) #else the transmission is sucessful and the reserve is updated
-												
+									if self.settings.claclost:
+										for cell in cellsBuffer:
+											neighb.lost[cell[0]][cell[1]]=False
+										print 'false:',cell[0],cell[1],cell
+							else: # self.PDR[neighb] <= fail
+								if self.settings.claclost:
+									for cell in cellList:
+										neighb.lost[cell[0]][cell[1]]=True
+										print 'true:',cell[0],cell[1],cell
+										
+			#############################################################################################################################################################
+			
 			if self.settings.queuing != 0  :
 				self.cellsAllocToNeighbor[neighbor] = []
 				for (ts,ch,dir) in cellList :
