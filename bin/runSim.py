@@ -280,6 +280,27 @@ def parseCliOptions():
         default = False,
         help = 'god mode',
     )
+
+    ################################ Ali Jawad FAHS ###############################
+
+    parser.add_argument('--lme',
+        dest       = 'lme',
+        action     = 'store_true',
+        default    = False,
+        help       = 'use the ideal lme case ',
+    )
+    parser.add_argument('--lmeWithPdr',
+        dest       = 'lmeWithPdr',
+        action     = 'store_true',
+        default    = False,
+        help       = 'use the lme while broadcasting to the neighbors according to the PDR value',
+    )
+    parser.add_argument('--lmeWithBuffer',
+        dest       = 'lmeWithBuffer',
+        action     = 'store_true',
+        default    = False,
+        help       = 'use the lme cells buffer to send the old cells as well ',
+    )
     
     options        = parser.parse_args()
 
@@ -325,7 +346,6 @@ def runSims(options):
             settings.setCombinationKeys(combinationKeys)
             simengine        = SimEngine.SimEngine(runNum)
             simstats         = SimStats.SimStats(runNum,simParam['numRuns'])
-            #passing the number of runs to enable the display  of them while the code is runnig
 
             # start simulation run
             simengine.start()
