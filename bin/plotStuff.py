@@ -34,6 +34,8 @@ import scipy.stats
 
 import logging.config
 import matplotlib.pyplot
+import matplotlib.pyplot as plt 
+import matplotlib.patches as mpatches
 import argparse
 
 #============================ defines =========================================
@@ -70,6 +72,13 @@ def parseCliOptions():
         help       = 'SimData directory for the second plot.',
     )
 
+    parser.add_argument('--simDataDir3',
+        dest       = 'simDataDir3',
+        type       = str,
+        default    = 'simData3',
+        help       = 'SimData directory for the third plot.',
+    )
+
     parser.add_argument('--plotTitle',
         dest       = 'plotTitle',
         type       = str,
@@ -82,6 +91,20 @@ def parseCliOptions():
         type       = str,
         default    = "",
         help       = "second plot title",
+    )
+
+    parser.add_argument('--plotTitle3',
+        dest       = 'plotTitle3',
+        type       = str,
+        default    = "",
+        help       = "third plot title",
+    )
+
+    parser.add_argument('--elem2',
+        dest = 'elem2',
+        type = bool,
+        default = False,
+        help = 'add this elem to all the plots',
     )
     
     options        = parser.parse_args()
@@ -247,7 +270,7 @@ def genTimelinePlots2(dir1,dir2,infilename1,infilename2,elemName):
     y         = [meanPerCycle1[k] for k in x]
     yerr      = [confintPerCycle1[k] for k in x]
 
-    matplotlib.pyplot.figure()
+    matplotlib.pyplot.figure(figsize=(15, 10))
     matplotlib.pyplot.errorbar(x,y,yerr=yerr)
 
             
@@ -294,18 +317,222 @@ def genTimelinePlots2(dir1,dir2,infilename1,infilename2,elemName):
 
     options            = parseCliOptions()
     
-    pink_line = matplotlib.patches.Patch(color=matplotlib.cm.spring(0), label=options['plotTitle2'])
-    blue_line = matplotlib.patches.Patch(label=options['plotTitle'])
+    #pink_line = matplotlib.patches.Patch(color=matplotlib.cm.spring(0), label=options['plotTitle2'])
+    #blue_line = matplotlib.patches.Patch(label=options['plotTitle'])
+    blue_patch = mpatches.Patch( label='Ideal')
+    pink_patch = mpatches.Patch(color=matplotlib.cm.spring(0),label='BC using PDR')
+    #orange_patch = mpatches.Patch( color='#FD7B08', label='Housekeeping alone')
+    plt.legend(handles=[blue_patch,pink_patch])
 
     
-    matplotlib.pyplot.legend(handles=[blue_line, pink_line], bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+    #matplotlib.pyplot.legend(handles=[blue_line, pink_line], bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
     
     matplotlib.pyplot.savefig(outfilepath)
     matplotlib.pyplot.close('all')
 
     # print
     print 'done.'
+def genTimelinePlots4(dir1,dir2,dir3,infilename1,infilename2,infilename3,elemName):
 
+    infilepath1     = os.path.join(dir1,infilename1)
+    infilepath2     = os.path.join(dir2,infilename2)
+    infilepath3     = os.path.join(dir3,infilename3)
+    outfilename    = infilename1.split('.')[0]+'_{}.png'.format(elemName)
+    outfilepath    = os.path.join(dir1,outfilename)
+
+    # print
+    print 'Parsing    {0}...'.format(infilename1),
+
+    # find colnumelem, colnumcycle, colnumrunNum
+    with open(infilepath1,'r') as f:
+        for line in f:
+            if line.startswith('# '):
+                elems        = re.sub(' +',' ',line[2:]).split()
+                numcols      = len(elems)
+                colnumelem   = elems.index(elemName)
+                colnumcycle  = elems.index('cycle')
+                colnumrunNum = elems.index('runNum')
+                break
+        
+    assert colnumelem
+    assert colnumcycle
+    assert colnumrunNum
+
+    with open(infilepath2,'r') as f:
+        for line in f:
+            if line.startswith('# '):
+                elems2        = re.sub(' +',' ',line[2:]).split()
+                numcols2      = len(elems2)
+                colnumelem2   = elems2.index(elemName)
+                colnumcycle2  = elems2.index('cycle')
+                colnumrunNum2 = elems2.index('runNum')
+                break
+        
+    assert colnumelem2
+    assert colnumcycle2
+    assert colnumrunNum2
+
+    with open(infilepath3,'r') as f:
+        for line in f:
+            if line.startswith('# '):
+                elems3        = re.sub(' +',' ',line[2:]).split()
+                numcols3      = len(elems3)
+                colnumelem3   = elems3.index(elemName)
+                colnumcycle3  = elems3.index('cycle')
+                colnumrunNum3 = elems3.index('runNum')
+                break
+        
+    assert colnumelem3
+    assert colnumcycle3
+    assert colnumrunNum3
+
+    # parse data
+    valuesPerCycle1 = {}
+    with open(infilepath1,'r') as f:
+        for line in f:
+            if line.startswith('#') or not line.strip():
+                continue
+            m = re.search('\s+'.join(['([\.0-9]+)']*numcols),line.strip())
+            cycle  = int(m.group(colnumcycle+1))
+            runNum = int(m.group(colnumrunNum+1))
+            try:
+                elem         = float(m.group(colnumelem+1))
+            except:
+                try:
+                    elem     =   int(m.group(colnumelem+1))
+                except:
+                    elem     =       m.group(colnumelem+1)
+            #print 'cycle={0} runNum={1} elem={2}'.format(cycle,runNum,elem)
+            if cycle not in valuesPerCycle1:
+                valuesPerCycle1[cycle] = []
+            valuesPerCycle1[cycle] += [elem]
+
+    
+    # print
+    print 'done.'
+
+    # print
+    print 'Generating {0}...'.format(outfilename),
+
+    # calculate mean and confidence interval
+    meanPerCycle1    = {}
+    confintPerCycle1 = {}
+    for (k,v) in valuesPerCycle1.items():
+        a          = 1.0*numpy.array(v)
+        n          = len(a)
+        se         = scipy.stats.sem(a)
+        m          = numpy.mean(a)
+        confint    = se * scipy.stats.t._ppf((1+CONFINT)/2., n-1)
+        meanPerCycle1[k]      = m
+        confintPerCycle1[k]   = confint
+
+    # plot
+    x         = sorted(meanPerCycle1.keys())
+    y         = [meanPerCycle1[k] for k in x]
+    yerr      = [confintPerCycle1[k] for k in x]
+
+    matplotlib.pyplot.figure(figsize=(15, 10))
+    matplotlib.pyplot.errorbar(x,y,yerr=yerr)
+
+            
+    valuesPerCycle2 = {}
+    with open(infilepath2,'r') as f:
+        for line in f:
+            if line.startswith('#') or not line.strip():
+                continue
+            m = re.search('\s+'.join(['([\.0-9]+)']*numcols),line.strip())
+            cycle  = int(m.group(colnumcycle2+1))
+            runNum = int(m.group(colnumrunNum2+1))
+            try:
+                elem         = float(m.group(colnumelem2+1))
+            except:
+                try:
+                    elem     =   int(m.group(colnumelem2+1))
+                except:
+                    elem     =       m.group(colnumelem2+1)
+            #print 'cycle={0} runNum={1} elem={2}'.format(cycle,runNum,elem)
+            if cycle not in valuesPerCycle2:
+                valuesPerCycle2[cycle] = []
+            valuesPerCycle2[cycle] += [elem]
+
+    meanPerCycle2    = {}
+    confintPerCycle2 = {}
+    for (k,v) in valuesPerCycle2.items():
+        a          = 1.0*numpy.array(v)
+        n          = len(a)
+        se         = scipy.stats.sem(a)
+        m          = numpy.mean(a)
+        confint    = se * scipy.stats.t._ppf((1+CONFINT)/2., n-1)
+        meanPerCycle2[k]      = m
+        confintPerCycle2[k]   = confint
+
+    
+    x2         = sorted(meanPerCycle2.keys())
+    y2         = [meanPerCycle2[k] for k in x2]
+    yerr2      = [confintPerCycle2[k] for k in x2]
+    
+    matplotlib.pyplot.errorbar(x2,y2,yerr=yerr2, c = matplotlib.cm.spring(0))
+
+    valuesPerCycle3 = {}
+    with open(infilepath3,'r') as f:
+        for line in f:
+            if line.startswith('#') or not line.strip():
+                continue
+            m = re.search('\s+'.join(['([\.0-9]+)']*numcols),line.strip())
+            cycle  = int(m.group(colnumcycle2+1))
+            runNum = int(m.group(colnumrunNum2+1))
+            try:
+                elem         = float(m.group(colnumelem2+1))
+            except:
+                try:
+                    elem     =   int(m.group(colnumelem2+1))
+                except:
+                    elem     =       m.group(colnumelem2+1)
+            #print 'cycle={0} runNum={1} elem={2}'.format(cycle,runNum,elem)
+            if cycle not in valuesPerCycle3:
+                valuesPerCycle3[cycle] = []
+            valuesPerCycle3[cycle] += [elem]
+
+    meanPerCycle3    = {}
+    confintPerCycle3 = {}
+    for (k,v) in valuesPerCycle3.items():
+        a          = 1.0*numpy.array(v)
+        n          = len(a)
+        se         = scipy.stats.sem(a)
+        m          = numpy.mean(a)
+        confint    = se * scipy.stats.t._ppf((1+CONFINT)/2., n-1)
+        meanPerCycle3[k]      = m
+        confintPerCycle3[k]   = confint
+
+    x3         = sorted(meanPerCycle3.keys())
+    y3         = [meanPerCycle3[k] for k in x3]
+    yerr3      = [confintPerCycle3[k] for k in x3]
+    
+    matplotlib.pyplot.errorbar(x3,y3,yerr=yerr3, c = '#FD7B08')
+
+
+    #red_patch = matplotlib.patches.Patch(color='red', label='The red data', fmt = '^')
+    #spring_patch = matplotlib.patches.Patch(color=matplotlib.cm.spring(0), label='the pring data')
+
+    options            = parseCliOptions()
+    
+    #pink_line = matplotlib.patches.Patch(color=matplotlib.cm.spring(0), label='BC using PDR')
+    #any_line = matplotlib.patches.Patch(color='#FD7B08', label='Housekeeping only')
+    #blue_line = matplotlib.patches.Patch(label='Ideal')
+    blue_patch = mpatches.Patch( label='Ideal')
+    pink_patch = mpatches.Patch(color=matplotlib.cm.spring(0),label='BC using PDR')
+    orange_patch = mpatches.Patch( color='#FD7B08', label='Housekeeping alone')
+    plt.legend(handles=[blue_patch,pink_patch,orange_patch])
+
+    #plt.show()
+    
+    #matplotlib.pyplot.legend(handles=[blue_line, pink_line,any_line], bbox_to_anchor=(1.05,1),loc=2,borderaxespad=0.)
+    
+    matplotlib.pyplot.savefig(outfilepath)
+    matplotlib.pyplot.close('all')
+
+    # print
+    print 'done.'
     
 def genSingleRunTimelinePlots(dir,infilename):
 
@@ -718,6 +945,149 @@ def genTopologyPlots(dir,infilename):
         print 'done.'
 
 
+def genTimelinePlots3(dir1,infilename1,elemName1,elemName2):
+
+    infilepath1    = os.path.join(dir1,infilename1)
+    outfilename    = infilename1.split('.')[0]+'_{}.png'.format(elemName1)
+    outfilepath    = os.path.join(dir1,outfilename)
+
+    # print
+    print 'Parsing    {0}...'.format(infilename1),
+
+    # find colnumelem, colnumcycle, colnumrunNum
+    with open(infilepath1,'r') as f:
+        for line in f:
+            if line.startswith('# '):
+                elems        = re.sub(' +',' ',line[2:]).split()
+                numcols      = len(elems)
+                colnumelem   = elems.index(elemName1)
+                colnumcycle  = elems.index('cycle')
+                colnumrunNum = elems.index('runNum')
+                break
+        
+    assert colnumelem
+    assert colnumcycle
+    assert colnumrunNum
+
+    with open(infilepath1,'r') as f:
+        for line in f:
+            if line.startswith('# '):
+                elems2        = re.sub(' +',' ',line[2:]).split()
+                numcols2      = len(elems2)
+                colnumelem2   = elems2.index(elemName2)
+                colnumcycle2  = elems2.index('cycle')
+                colnumrunNum2 = elems2.index('runNum')
+                break
+        
+    assert colnumelem2
+    assert colnumcycle2
+    assert colnumrunNum2
+
+    # parse data
+    valuesPerCycle1 = {}
+    with open(infilepath1,'r') as f:
+        for line in f:
+            if line.startswith('#') or not line.strip():
+                continue
+            m = re.search('\s+'.join(['([\.0-9]+)']*numcols),line.strip())
+            cycle  = int(m.group(colnumcycle+1))
+            runNum = int(m.group(colnumrunNum+1))
+            try:
+                elem         = float(m.group(colnumelem+1))
+            except:
+                try:
+                    elem     =   int(m.group(colnumelem+1))
+                except:
+                    elem     =       m.group(colnumelem+1)
+            #print 'cycle={0} runNum={1} elem={2}'.format(cycle,runNum,elem)
+            if cycle not in valuesPerCycle1:
+                valuesPerCycle1[cycle] = []
+            valuesPerCycle1[cycle] += [elem]
+
+    
+    # print
+    print 'done.'
+
+    # print
+    print 'Generating {0}...'.format(outfilename),
+
+    # calculate mean and confidence interval
+    meanPerCycle1    = {}
+    confintPerCycle1 = {}
+    for (k,v) in valuesPerCycle1.items():
+        a          = 1.0*numpy.array(v)
+        n          = len(a)
+        se         = scipy.stats.sem(a)
+        m          = numpy.mean(a)
+        confint    = se * scipy.stats.t._ppf((1+CONFINT)/2., n-1)
+        meanPerCycle1[k]      = m
+        confintPerCycle1[k]   = confint
+
+    # plot
+    x         = sorted(meanPerCycle1.keys())
+    y         = [meanPerCycle1[k] for k in x]
+    yerr      = [confintPerCycle1[k] for k in x]
+
+    matplotlib.pyplot.figure()
+    matplotlib.pyplot.errorbar(x,y,yerr=yerr)
+
+            
+    valuesPerCycle2 = {}
+    with open(infilepath1,'r') as f:
+        for line in f:
+            if line.startswith('#') or not line.strip():
+                continue
+            m = re.search('\s+'.join(['([\.0-9]+)']*numcols),line.strip())
+            cycle  = int(m.group(colnumcycle2+1))
+            runNum = int(m.group(colnumrunNum2+1))
+            try:
+                elem         = float(m.group(colnumelem2+1))
+            except:
+                try:
+                    elem     =   int(m.group(colnumelem2+1))
+                except:
+                    elem     =       m.group(colnumelem2+1)
+            #print 'cycle={0} runNum={1} elem={2}'.format(cycle,runNum,elem)
+            if cycle not in valuesPerCycle2:
+                valuesPerCycle2[cycle] = []
+            valuesPerCycle2[cycle] += [elem]
+
+    meanPerCycle2    = {}
+    confintPerCycle2 = {}
+    for (k,v) in valuesPerCycle2.items():
+        a          = 1.0*numpy.array(v)
+        n          = len(a)
+        se         = scipy.stats.sem(a)
+        m          = numpy.mean(a)
+        confint    = se * scipy.stats.t._ppf((1+CONFINT)/2., n-1)
+        meanPerCycle2[k]      = m
+        confintPerCycle2[k]   = confint
+
+    
+    x2         = sorted(meanPerCycle2.keys())
+    y2         = [meanPerCycle2[k] for k in x2]
+    yerr2      = [confintPerCycle2[k] for k in x2]
+    
+    matplotlib.pyplot.errorbar(x2,y2,yerr=yerr2, c = matplotlib.cm.spring(0))
+
+    #red_patch = matplotlib.patches.Patch(color='red', label='The red data', fmt = '^')
+    #spring_patch = matplotlib.patches.Patch(color=matplotlib.cm.spring(0), label='the pring data')
+
+    options            = parseCliOptions()
+    
+    pink_line = matplotlib.patches.Patch(color=matplotlib.cm.spring(0), label=options['plotTitle2'])
+    blue_line = matplotlib.patches.Patch(label=options['plotTitle'])
+
+    
+    matplotlib.pyplot.legend(handles=[blue_line, pink_line], bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+    
+    matplotlib.pyplot.savefig(outfilepath)
+    matplotlib.pyplot.close('all')
+
+    # print
+    print 'done.'
+
+
 #============================ main ============================================
 
 def main():
@@ -729,15 +1099,46 @@ def main():
     options            = parseCliOptions()
     simDataDir         = options['simDataDir']
     simDataDir2        = options['simDataDir2']
+    simDataDir3        = options['simDataDir3']
 
     # verify there is some data to plot
     if not os.path.isdir(simDataDir):
         print 'There are no simulation results to analyze.'
         sys.exit(1)
+
+    
     
     # plot figures
-    dir = simDataDir
+    dir  = simDataDir
     dir2 = simDataDir2
+    dir3 = simDataDir3
+
+    if options['elem2'] == True:
+        for infilename in glob.glob(os.path.join(dir,'*.dat')):
+            print os.path.join(simDataDir, dir,'*.dat')
+            elem1=options['elemNames'][0]
+            elem2=options['elemNames'][1]
+            genTimelinePlots3(dir,os.path.basename(infilename),elem1,elem2)
+        return
+    
+    if os.path.isdir(dir2) and os.path.isdir(dir3):
+        for infilename1, infilename2 , infilename3 in zip(glob.glob(os.path.join(dir,'*.dat')), glob.glob(os.path.join(dir2,'*.dat')),glob.glob(os.path.join(dir3,'*.dat'))):
+            print os.path.join(simDataDir, dir,'*.dat')
+            print os.path.join(simDataDir2, dir2,'*.dat')
+            print os.path.join(simDataDir3, dir3,'*.dat')
+
+            for elemName in options['elemNames']: 
+                genTimelinePlots4(
+                    dir1          = dir,
+                    dir2          = dir2,
+                    dir3          = dir3,
+                    infilename1   = os.path.basename(infilename1),
+                    infilename2   = os.path.basename(infilename2),
+                    infilename3   = os.path.basename(infilename3),
+                    elemName      = elemName,
+                )
+            # plot timelines for each run
+        return
     if os.path.isdir(dir2) :
         for infilename1, infilename2 in zip(glob.glob(os.path.join(dir,'*.dat')), glob.glob(os.path.join(dir2,'*.dat'))):
             print os.path.join(simDataDir, dir,'*.dat')
@@ -783,7 +1184,7 @@ def main():
                 dir               = dir,
                 infilename        = os.path.basename(infilename),
             )
-
+    
 
 
 if __name__=="__main__":
