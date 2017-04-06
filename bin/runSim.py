@@ -301,6 +301,13 @@ def parseCliOptions():
         default    = False,
         help       = 'use the lme cells buffer to send the old cells as well ',
     )
+    parser.add_argument( '--bufferLength',
+        dest       = 'bufferLength',
+        nargs      = '+',
+        type       = int,
+        default    = 10,
+        help       = 'Number of cells a node buffer can contain.',
+    )
     
     options        = parser.parse_args()
 

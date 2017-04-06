@@ -20,7 +20,7 @@ log.setLevel(logging.DEBUG)
 log.addHandler(NullHandler())
 
 #============================ imports =========================================
-
+import collections
 import copy
 import random
 import threading
@@ -161,6 +161,7 @@ class Mote(object):
 		self.pktToSendAlloc        = None
 		self.schedule                  = {}                    # indexed by ts, contains cell
 		self.reserve                   = [[False]*self.settings.numChans for _ in range(self.settings.slotframeLength)]
+		self.cellsBuffer               = collections.deque([], self.settings.bufferLength)
 		if self.settings.queuing != 0 :
 			self.waitingFor                = self.DIR_SHARED
 		else :
