@@ -178,7 +178,7 @@ def genTimelinePlots(dir,infilename,elemName):
     x         = sorted(meanPerCycle.keys())
     y         = [meanPerCycle[k] for k in x]
     yerr      = [confintPerCycle[k] for k in x]
-    matplotlib.pyplot.figure()
+    matplotlib.pyplot.figure(figsize=(15, 10))
     matplotlib.pyplot.errorbar(x,y,yerr=yerr)
     matplotlib.pyplot.savefig(outfilepath)
     matplotlib.pyplot.close('all')
@@ -1028,7 +1028,7 @@ def genTimelinePlots3(dir1,infilename1,elemName1,elemName2):
     y         = [meanPerCycle1[k] for k in x]
     yerr      = [confintPerCycle1[k] for k in x]
 
-    matplotlib.pyplot.figure()
+    matplotlib.pyplot.figure(figsize=(15, 10))
     matplotlib.pyplot.errorbar(x,y,yerr=yerr)
 
             
