@@ -1135,24 +1135,25 @@ class Mote(object):
 				else: # self.settings.lme == False
 					if self.settings.lmeWithPdr: # same as the one below  line 1141
 						for neighb in neighbor._myNeigbors():
-							fail = random.random()
-							if neighbor.PDR[neighb]>fail:
+							if neighb != neighbor :
+								fail = random.random()
+								if neighbor.PDR[neighb]>fail:
 
-								if not self.settings.lmeWithBuffer:
-									self._reserve_cell_neighbor(cellList,neighb)
-							
-								else: # self.settings.lmeWithBuffer == True
-									self._reserve_cell_neighbor(self.cellsBuffer,neighb) #transmission is sucessful and we send also the old cells so all the cells in the buffer won't be lost
-									if self.settings.calclost:
-										for cell in self.cellsBuffer:
-											neighb.lost[cell[0]][cell[1]]=False
+									if not self.settings.lmeWithBuffer:
+										self._reserve_cell_neighbor(cellList,neighb)
+								
+									else: # self.settings.lmeWithBuffer == True
+										self._reserve_cell_neighbor(self.cellsBuffer,neighb) #transmission is sucessful and we send also the old cells so all the cells in the buffer won't be lost
+										if self.settings.calclost:
+											for cell in self.cellsBuffer:
+												neighb.lost[cell[0]][cell[1]]=False
 											
-							else: # neighbor.PDR[neighb] <= fail
-							#case of the packet is lost due two the network
-								if self.settings.calclost:
-									for cell in cellList:
-										neighb.lost[cell[0]][cell[1]]=True										
-			else: # dir!=self.DIR_TX
+								else: # neighbor.PDR[neighb] <= fail
+								#case of the packet is lost due two the network
+									if self.settings.calclost:
+										for cell in cellList:
+											neighb.lost[cell[0]][cell[1]]=True										
+			else: # dir==self.DIR_RX
 				if neighbor not in self.numCellsFromNeighbors:
 					self.numCellsFromNeighbors[neighbor]    = 0
 				self.numCellsFromNeighbors[neighbor]  += len(cellList)
@@ -1170,19 +1171,20 @@ class Mote(object):
 					if self.settings.lmeWithPdr:
 						#else if we are using lme while broadcasting usin the value of PDR 
 						for neighb in self._myNeigbors():
-							fail = random.random() #we pick a random value fail which is uniform and between 0 and 1
-							if self.PDR[neighb]>fail: # if fail is greater than the PDR value with the neighbor then the transmission is unsuccessful  
-								if not self.settings.lmeWithBuffer:
-									self._reserve_cell_neighbor(cellList,neighb)#else the transmission is sucessful and the reserve is updated
-								else: # self.settings.lmeWithBuffer == True
-									self._reserve_cell_neighbor(self.cellsBuffer,neighb) #else the transmission is sucessful and the reserve is updated
+							if neighb != neighbor:
+								fail = random.random() #we pick a random value fail which is uniform and between 0 and 1
+								if self.PDR[neighb]>fail: # if fail is greater than the PDR value with the neighbor then the transmission is unsuccessful  
+									if not self.settings.lmeWithBuffer:
+										self._reserve_cell_neighbor(cellList,neighb)#else the transmission is sucessful and the reserve is updated
+									else: # self.settings.lmeWithBuffer == True
+										self._reserve_cell_neighbor(self.cellsBuffer,neighb) #else the transmission is sucessful and the reserve is updated
+										if self.settings.calclost:
+											for cell in self.cellsBuffer:
+												neighb.lost[cell[0]][cell[1]]=False										
+								else: # self.PDR[neighb] <= fail
 									if self.settings.calclost:
-										for cell in self.cellsBuffer:
-											neighb.lost[cell[0]][cell[1]]=False										
-							else: # self.PDR[neighb] <= fail
-								if self.settings.calclost:
-									for cell in cellList:
-										neighb.lost[cell[0]][cell[1]]=True
+										for cell in cellList:
+											neighb.lost[cell[0]][cell[1]]=True
 										
 
 			#############################################################################################################################################################
