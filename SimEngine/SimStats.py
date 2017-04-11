@@ -238,7 +238,7 @@ class SimStats(object):
                             lostreserve += 1 
                             if i in mote.schedule.keys() and mote.schedule.get(i)['ch'] == j and mote.schedule.get(i)['dir']==mote.DIR_TX:
                                 efflostreserve += 1
-            return {'scheduleCollisions':scheduleCollisions, 'collidedTxs': collidedTxs, 'effectiveCollidedTxs': effectiveCollidedTxs, 'collidedControls' : collidedControls, 'effectiveCollidedControls' : effectiveCollidedControls, 'collidedAnswers' : collidedAnswers, 'collidedRequests' : collidedRequests, 'lostreserve' : collidedRequests, 'efflostreserve' : efflostreserve}
+            return {'scheduleCollisions':scheduleCollisions, 'collidedTxs': collidedTxs, 'effectiveCollidedTxs': effectiveCollidedTxs, 'collidedControls' : collidedControls, 'effectiveCollidedControls' : effectiveCollidedControls, 'collidedAnswers' : collidedAnswers, 'collidedRequests' : collidedRequests, 'lostreserve' : lostreserve, 'efflostreserve' : efflostreserve}
        
         return {'scheduleCollisions':scheduleCollisions, 'collidedTxs': collidedTxs, 'effectiveCollidedTxs': effectiveCollidedTxs, 'collidedControls' : collidedControls, 'effectiveCollidedControls' : effectiveCollidedControls, 'collidedAnswers' : collidedAnswers, 'collidedRequests' : collidedRequests}
 
