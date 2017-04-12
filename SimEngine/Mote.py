@@ -1236,6 +1236,7 @@ class Mote(object):
 
 	def top_cell_deletion_receiver(self,neighbor,tsList):
 		with self.dataLock:
+################################################################################# Ali Jawad Fahs ###############################################################
 			cellList=[]
 			for ts in tsList :
 				#get the cells from schedule before deleting them
@@ -1253,7 +1254,9 @@ class Mote(object):
 							if self.PDR[neighb]>fail:
 								self._delete_cell_neighbor(cellList,neighb)
 							self._update_lost(cellList,neighb)
+			#NEED TO IMPLEMENT A SHIFT RIGISTER FOR THE DELETED CELLS 
 
+##############################################################################################################################################################
 			self._tsch_removeCells(
 				neighbor     = neighbor,
 				tsList       = tsList,
