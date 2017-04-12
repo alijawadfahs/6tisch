@@ -1236,15 +1236,23 @@ class Mote(object):
 
 	def top_cell_deletion_receiver(self,neighbor,tsList):
 		with self.dataLock:
+			cellList=[]
+			for ts in tsList :
+				#get the cells from schedule before deleting them
+				cellList +=[(ts,self.schedule.get(ts)['ch'])]
 			if self.settings.lme: # if we are using the ideal case update the reserve cell ideally
-				cellList=[]
-				for ts in tsList :
-					#get the cells from schedule before deleting them
-					cellList +=[(ts,self.schedule.get(ts)['ch'])]
 				for neighb in self._myNeigbors():
 					#inform the neighbors ideally to delete them from the reserve 
 					if neighbor!=neighb:
 						self._delete_cell_neighbor(cellList,neighb)
+			else:
+				if self.settings.lmeWithPdr:
+					for neighb in self._myNeigbors():
+						if neighbor!=neighb:
+							fail = random.random()
+							if self.PDR[neighb]>fail:
+								self._delete_cell_neighbor(cellList,neighb)
+							self._update_lost(cellList,neighb)
 
 			self._tsch_removeCells(
 				neighbor     = neighbor,
@@ -2392,4 +2400,7 @@ class Mote(object):
 				if neighbor.reserve[ts][j]==False:
 					k+= [(j)]
 		random.shuffle(k)           
-		return k[0]         
+		return k[0]
+	def _update_lost(self,cells,neighb):
+		for cell in cells:
+			neighb.lost[cell[0]][cell[1]] = False
