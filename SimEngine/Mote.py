@@ -1135,7 +1135,7 @@ class Mote(object):
 				else: # self.settings.lme == False
 					if self.settings.lmeWithPdr: # same as the one below  line 1141
 						for neighb in neighbor._myNeigbors():
-							if neighb != neighbor :
+							if self != neighbor :
 								fail = random.random()
 								if neighbor.PDR[neighb]>fail:
 
