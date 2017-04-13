@@ -309,7 +309,7 @@ class Mote(object):
 			self._incrementMoteStats('droppedAppFailedEnqueueControl')
 		   
 
-	def _app_action_enqueueData(self):
+	def _app_action_enqueueData(self,args=None):
 		''' actual enqueue data function '''
 
 		#self._log(self.DEBUG,"[app] _app_action_sendData")
