@@ -1,4 +1,3 @@
-
 #!/usr/bin/python
 '''
 \brief Model of a 6TiSCH mote.
@@ -309,7 +308,7 @@ class Mote(object):
 			self._incrementMoteStats('droppedAppFailedEnqueueControl')
 		   
 
-	def _app_action_enqueueData(self,args=None):
+	def _app_action_enqueueData(self):
 		''' actual enqueue data function '''
 
 		#self._log(self.DEBUG,"[app] _app_action_sendData")
@@ -1239,8 +1238,9 @@ class Mote(object):
 ################################################################################# Ali Jawad Fahs ###############################################################
 			cellList=[]
 			for ts in tsList :
-				#get the cells from schedule before deleting them
-				cellList +=[(ts,self.schedule.get(ts)['ch'])]
+				if ts in self.schedule.keys():
+					#get the cells from schedule before deleting them
+					cellList +=[(ts,self.schedule.get(ts)['ch'])]
 			if self.settings.lme: # if we are using the ideal case update the reserve cell ideally
 				for neighb in self._myNeigbors():
 					#inform the neighbors ideally to delete them from the reserve 
@@ -1254,6 +1254,7 @@ class Mote(object):
 							if self.PDR[neighb]>fail:
 								self._delete_cell_neighbor(cellList,neighb)
 							self._update_lost(cellList,neighb)
+							
 			#NEED TO IMPLEMENT A SHIFT RIGISTER FOR THE DELETED CELLS 
 
 ##############################################################################################################################################################
