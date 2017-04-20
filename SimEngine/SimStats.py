@@ -159,6 +159,9 @@ class SimStats(object):
 
         # Note that this cannot count past schedule collisions which have been relocated by 6top
         # as this is called at the end of cycle
+        colls=self.propagation.collision
+        self.propagation.collision=0
+        print colls 
         scheduleCollisions = 0
         txCells = []
         for mote in self.engine.motes:

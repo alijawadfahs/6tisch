@@ -61,6 +61,7 @@ class Propagation(object):
         self.dataLock                  = threading.Lock()
         self.receivers                 = [] # motes with radios currently on listening
         self.transmissions             = [] # ongoing transmissions
+        self.collision                 = 0
         
         # schedule propagation task
         self._schedule_propagate()
@@ -118,6 +119,21 @@ class Propagation(object):
 
             for transmission in self.transmissions:
                 arrivalTime[transmission['smac']] = transmission['smac'].calcTime()
+            # calculate the lost packets 
+            for t1 in self.transmissions:
+                for t2 in self.transmissions: # nested loops over the all the trasmission 
+                    if t1 != t2 and t1['channel']==t2['channel']: # same TS and channel
+                        
+
+                        if t2['dmac'].getRSSI(t1['smac'])>t2['dmac'].minRssi: # they can hear each others 
+
+                            
+                            logging.info('collision between %d -> %d and %d -> %d ',t1['smac'].id,t1['dmac'].id ,t2['smac'].id,t2['dmac'].id) 
+                            self.collision+=1
+                        else: # just an interfernce with no collisions, they are not neighbors
+                            
+                            logging.info('interfernce between %d -> %d and %d -> %d ',t1['smac'].id,t1['dmac'].id ,t2['smac'].id,t2['dmac'].id) 
+
                         
             for transmission in self.transmissions:
                 
