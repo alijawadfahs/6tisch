@@ -161,7 +161,7 @@ class SimStats(object):
         # as this is called at the end of cycle
         colls=self.propagation.collision
         self.propagation.collision=0
-        print colls 
+        
         scheduleCollisions = 0
         txCells = []
         for mote in self.engine.motes:
@@ -241,9 +241,9 @@ class SimStats(object):
                             lostreserve += 1 
                             if i in mote.schedule.keys() and mote.schedule.get(i)['ch'] == j and mote.schedule.get(i)['dir']==mote.DIR_TX:
                                 efflostreserve += 1
-            return {'scheduleCollisions':scheduleCollisions, 'collidedTxs': collidedTxs, 'effectiveCollidedTxs': effectiveCollidedTxs, 'collidedControls' : collidedControls, 'effectiveCollidedControls' : effectiveCollidedControls, 'collidedAnswers' : collidedAnswers, 'collidedRequests' : collidedRequests, 'lostreserve' : lostreserve, 'efflostreserve' : efflostreserve}
+            return {'scheduleCollisions':scheduleCollisions, 'collidedTxs': collidedTxs, 'effectiveCollidedTxs': effectiveCollidedTxs, 'collidedControls' : collidedControls, 'effectiveCollidedControls' : effectiveCollidedControls, 'collidedAnswers' : collidedAnswers, 'collidedRequests' : collidedRequests, 'lostreserve' : lostreserve, 'efflostreserve' : efflostreserve ,'collidedPackets':colls}
        
-        return {'scheduleCollisions':scheduleCollisions, 'collidedTxs': collidedTxs, 'effectiveCollidedTxs': effectiveCollidedTxs, 'collidedControls' : collidedControls, 'effectiveCollidedControls' : effectiveCollidedControls, 'collidedAnswers' : collidedAnswers, 'collidedRequests' : collidedRequests}
+        return {'scheduleCollisions':scheduleCollisions, 'collidedTxs': collidedTxs, 'effectiveCollidedTxs': effectiveCollidedTxs, 'collidedControls' : collidedControls, 'effectiveCollidedControls' : effectiveCollidedControls, 'collidedAnswers' : collidedAnswers, 'collidedRequests' : collidedRequests, 'collidedPackets':colls}
 
     #=== writing to file
 
